@@ -1,0 +1,91 @@
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<style type="text/css">
+	#stage{
+		position: relative;
+	}
+
+	.cell{
+	position: absolute;
+	width: 30px;
+	height: 30px;
+	border: 1px solid whitw;
+	background-color: #fff;
+	}
+</style>
+
+	<div id="stage"></div>
+
+<script type="text/javascript">
+	var stage = document.querySelector("#stage");
+
+	var pattern =[
+	[1,0,1,0,1,0,1,0],
+	[0,1,0,1,0,1,0,1],
+	[1,0,1,0,1,0,1,0],
+	[0,1,0,1,0,1,0,1],
+	[1,0,1,0,1,0,1,0],
+	[0,1,0,1,0,1,0,1],
+	[1,0,1,0,1,0,1,0],
+	[0,1,0,1,0,1,0,1],
+	];
+	
+	var ROWS = pattern.length;
+	var COLUMNS = pattern[0].length;
+	var SIZE = 30;		
+	var SPACE = 1;
+
+	for(var rows = 0; rows<ROWS; rows++)
+	{
+			for(var cols=0; cols<COLUMNS ; cols++)
+			{
+			var cell = document.createElement("div");
+			
+			cell.setAttribute("class","cell");
+
+			stage.appendChild(cell);
+			
+			if(pattern[rows][cols]==1){
+
+				cell.style.backgroundColor = "#ccc";
+				//cell.style.background="#999";
+				//console.log(cell);
+			}
+
+			cell.style.top = rows * (SIZE + SPACE) + "px";
+			cell.style.left = cols * (SIZE + SPACE) + "px"; 
+
+	 // console.log("prints" + cell[row][cols]);
+	// 	console.log(cell.style.top);
+	// 	console.log(cell.style.left);
+		}
+		}
+	
+// 	var closet =[
+// ["ball", "yoyo", "teddy"],
+// ["Austen", "Bronte", "Swift"],
+// ["guitar", "tabla", "flute"]
+// ];
+// //Find the number of rows and columns
+// var ROWS = closet.length;
+// var COLUMNS = closet[0].length;
+// //Loop through each row
+// for(var row = 0; row < ROWS; row++)
+// {
+// console.log("--- Array: " + row);
+// //Loop through each element of each row
+// for(var column = 0; column < COLUMNS; column++)
+// {
+// //Display the row
+// console.log(closet[row][column]);
+// }
+// } 
+
+
+
+</script>
+</body>
+</html>

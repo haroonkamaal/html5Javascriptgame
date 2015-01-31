@@ -1,0 +1,687 @@
+<html>
+	<head>
+		<title>time bomb panic</title>
+	</head>
+	<body>
+		<canvas width = "704" height = "512" style = "border :1px solid #999"></canvas>
+		<script type="text/javascript">
+		(function(){
+			var canvas = document.querySelector("canvas");
+			var dsurface = canvas.getContext("2d");
+
+						var map =
+			[
+			[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+			[3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,3],
+			[3,1,2,1,1,2,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,3],
+			[3,1,1,1,1,2,1,1,1,2,2,2,1,1,1,1,1,2,1,1,1,3],
+			[3,1,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,1,1,1,2,3],
+			[3,1,1,2,2,2,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,3],
+			[3,1,1,1,1,1,1,1,2,2,1,1,2,1,1,1,2,2,2,1,1,3],
+			[3,1,1,1,1,1,1,1,2,1,1,1,1,1,1,2,1,1,1,1,1,3],
+			[3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,3],
+			[3,1,1,1,1,1,1,1,1,1,1,1,2,1,1,2,2,2,1,1,1,3],
+			[3,1,1,2,2,2,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,3],
+			[3,1,1,1,1,1,2,1,1,2,1,1,2,2,2,2,2,1,1,1,1,3],
+			[3,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,2,2,2,2,1,3],
+			[3,1,1,2,1,1,1,1,1,2,2,1,1,2,2,1,2,1,1,1,1,3],
+			[3,1,1,2,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,3],
+			[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]
+			];
+			var gameobjects =
+			[
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0],
+			[0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,4,0,0,0,0,5,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+			]; 
+			// the image object
+			var spriteobject = {
+				sourcex :0,
+				sourcey :0,
+				soucewidth:64,
+				sourceheight:64,
+				x:0,
+				y:0,
+				width:64,
+				height:64,
+				visible:true,
+				vx:0,
+				vy:0,
+				scrollable : true,
+				centerX : function(){
+					return this.x + (this.width/2);
+				},
+				centerY : function(){
+					return this.y + (this.height/2);
+				},
+				halfWidth : function(){
+					return this.width/2;
+				},
+				halfHeight : function(){
+					return this.height/2;
+				},
+			}
+			// var alien = Object.create(spriteobject);
+			// console.log("alien " , alien.centerx());
+			
+			// the message object
+			var messageobject =
+				{
+				x: 0,
+				y: 0,
+				visible: true,
+				text: "Message",
+				font: "normal bold 20px Helvetica",
+				fillStyle: "red",
+				textBaseline: "top"
+				};
+			var gametimer =
+				{
+				time: 0,
+				interval: undefined,
+				
+				start: function()
+				{
+				var self = this;
+					this.interval = setInterval(function(){self.tick();}, 1000);
+				},
+				tick: function()
+				{
+				this.time--;
+				},
+				stop: function()
+				{
+				clearInterval(this.interval);
+				},
+				reset: function()
+				{
+				this.time = 0;
+				}
+				};
+				gametimer.time = 25;
+				gametimer.start();
+						
+				//The game objects map
+				 // var total_bom =10
+				 // var gameobjects =[]
+				 // 	for(var i =0 ; i<11;i++){
+				 // 		var b = []
+				 // 		for(var a=0; a<11; a++){
+
+				 // 		b[a]= 5;	
+
+				 // 		}
+				 // 		gameobjects.push(b)
+				 // 	}
+
+				
+				var tilesheetcolumns = 5;
+				var size = 64;
+				var EMPTY = 0;
+				var FLOOR = 1;
+				var BOX = 2;
+				var WALL = 3;
+				var ALIEN = 4;
+				var BOMB = 5
+				var alien = null;
+				//array for the game
+				var assettoload = [];
+				var sprites = [];
+				var bombs = [];
+				var boxes = [];
+				var messages = [];
+				var gameovermessage = Object.create(messageobject);
+				var timermessage = Object.create(messageobject);
+				var bombdiffused =0;
+				var timedisplay = null;
+				var gameoverdisplay = null;
+				var gameovermessage = null;
+				var timermessage = null;
+				
+				var assetsloaded = 0;
+				
+				//no of rows and columns in map
+				var ROWS = map.length;
+				var COLUMNS = map[0].length;
+				//game states
+				var LOADING = 0;
+				var BUILD_MAP = 1;
+				var PLAYING = 2;
+				var OVER = 3;
+				var gameState = LOADING;
+				//code for keys
+				var up = 38;
+				var down = 40;
+				var left = 37;
+				var right = 39;
+				var moveup = false;
+				var movedown = false;
+				var moveright=false;
+				var moveleft = false;
+				
+				var image = new Image();
+				image.addEventListener("load",loadhandler,false);
+				image.src = "image/timeBombPanic.png";
+				assettoload.push(image);
+
+				var gameWorld =  {
+					X : 0,
+					Y : 0,
+					Width : map[0].length *size,
+					Height : map.length * size,
+				}
+
+				var camera = {
+					X:0,
+					Y:0,
+					Width:canvas.width,
+					Height:canvas.height,
+
+					//The camera's inner scroll boundaries
+					rightInnerBoundary: function()
+					{
+					return this.X + (this.Width / 2) + (this.Width / 4);
+					},
+					leftInnerBoundary: function()
+					{
+					return this.X + (this.Width / 2)-(this.Width / 4);
+					},
+					topInnerBoundary: function()
+					{
+					return this.Y + (this.Height / 2)-(this.Height / 4);
+					}, 
+					bottomInnerBoundary: function()
+					{
+					return this.Y + (this.Height / 2) + (this.Height / 4);
+					}
+					
+				}	
+				camera.X = (gameWorld.X + gameWorld.Width / 2)-camera.Width / 2;
+				camera.Y = (gameWorld.Y + gameWorld.Height / 2)-camera.Height / 2;
+				console.log('camera.x ',camera.X);
+				console.log('camera.y',camera.Y);
+
+				//Add keyboard listeners
+		window.addEventListener("keydown", function(event)
+		{
+		switch(event.keyCode)
+		{
+		case up:
+		moveup = true;
+		break;
+		
+		case down:
+		movedown = true;
+		break;
+		
+		case left:
+		moveleft = true;
+		break;
+		
+		case right:
+		moveright = true;
+		break;
+		}
+		}, false);
+		window.addEventListener("keyup", function(event)
+		{
+		switch(event.keyCode)
+		{
+		case up:
+		moveup = false;
+		break;
+		
+		case down:
+		movedown = false;
+		break;
+		
+		case left:
+		moveleft = false;
+		break;
+		
+		case right:
+		moveright = false;
+		break;
+		}
+		}, false);
+				//build map function to create our map and gameobjects
+				
+				function buildmap(levelmap){
+					for(var row = 0 ; row < ROWS; row++)
+					{
+						for(var column = 0 ; column < COLUMNS ; column ++)
+						{
+							var currenttile =levelmap[row][column];
+							if(currenttile !== EMPTY)
+							{
+								var tilesheetX = Math.floor((currenttile-1) % tilesheetcolumns) * size;
+								var tilesheetY = Math.floor((currenttile-1) / tilesheetcolumns) * size;
+								switch(currenttile){
+								case FLOOR:
+								var floor = Object.create(spriteobject);
+								floor.sourcex = tilesheetX;
+								floor.sourcey = tilesheetY;
+								// console.log("floor.sourcex ",floor.sourcex);
+								// console.log("floor.sourcey ",floor.sourcey);
+								floor.x = column * size;
+								floor.y = row * size;
+								sprites.push(floor);
+								break;
+								
+								case BOX:
+								var box = Object.create(spriteobject);
+								box.sourcex = tilesheetX;
+								box.sourcey = tilesheetY;
+								box.x = column * size;
+								box.y = row * size;
+								sprites.push(box);
+								boxes.push(box);
+								break;
+								
+								case WALL:
+								var wall = Object.create(spriteobject);
+								wall.sourcex = tilesheetX;
+								wall.sourcey = tilesheetY;
+								wall.x = column * size;
+								wall.y = row * size;
+								sprites.push(wall);
+								boxes.push(wall);
+								break;
+								
+								case BOMB:
+								var bomb = Object.create(spriteobject);
+								bomb.sourcex = tilesheetX;
+								bomb.sourcey = tilesheetY;
+							
+								bomb.soucewidth = 48;
+								bomb.sourceheight = 36;
+								bomb.width = 48;
+								bomb.height = 48;
+								bomb.x = column * size + 10;
+								bomb.y = row * size + 16;
+								bombs.push(bomb);
+								sprites.push(bomb);
+								break;
+								
+								case ALIEN:
+								//Note: "alien" has already been defined in the main
+								//program so you don't need to precede it with "var"
+								alien = Object.create(spriteobject);
+								alien.sourcex = tilesheetX;
+								alien.sourcey = tilesheetY;
+								console.log("alien.sourcex ",alien.sourcex );
+								console.log("alien.sourcey ",alien.sourcey);
+								alien.x = column * size;
+								alien.y = row * size;
+								sprites.push(alien);
+								break;
+								}
+							}
+						}
+					}
+				}
+				
+				
+			// //************code for just checking the collision with overlap.*************
+			function hitTestCircle(c1, c2) {
+		//Calculate the vector between the circlesâ€™ center points
+		var vx = c1.centerX() - c2.centerX();
+		var vy = c1.centerY() - c2.centerY();
+		//Find the distance between the circles by calculating
+		//the vector's magnitude (how long the vector is)
+		var magnitude = Math.sqrt(vx * vx + vy * vy);
+		//Add together the circles' total radii
+		var totalRadii = c1.halfWidth() + c2.halfWidth();
+		console.log("magnitude ",magnitude);
+		console.log("totalRadii ",totalRadii);
+		//Set hit to true if the distance between the circles is
+		//less than their totalRadii
+		var hit = magnitude < totalRadii;
+		return hit;
+		}
+		
+		function blockRectangle(r1, r2) {
+		//A variable to tell us which side the
+		//collision is occurring on
+		var collisionSide = "";
+		//Calculate the distance vector
+		var vx = r1.centerX() - r2.centerX();
+		var vy = r1.centerY() - r2.centerY();
+		//Figure out the combined half-widths and half-heights
+		var combinedHalfWidths = r1.halfWidth() + r2.halfWidth();
+		var combinedHalfHeights = r1.halfHeight() + r2.halfHeight();
+		//Check whether vx is less than the combined half widths
+		if (Math.abs(vx) < combinedHalfWidths) {
+		//A collision might be occurring!
+		//Check whether vy is less than the combined half heights
+		if (Math.abs(vy) < combinedHalfHeights) {
+		//A collision has occurred! This is good!
+		//Find out the size of the overlap on both the X and Y axes
+		var overlapX = combinedHalfWidths - Math.abs(vx);
+		var overlapY = combinedHalfHeights - Math.abs(vy);
+		//The collision has occurred on the axis with the
+		//*smallest* amount of overlap. Let's figure out which
+		//axis that is
+		if (overlapX >= overlapY) {
+		//The collision is happening on the X axis
+		//But on which side? vy can tell us
+		if (vy > 0) {
+		collisionSide = "top";
+		//Move the rectangle out of the collision
+		r1.y = r1.y + overlapY;
+		} else {
+		collisionSide = "bottom";
+		//Move the rectangle out of the collision
+		r1.y = r1.y - overlapY;
+		}
+		} else {
+		//The collision is happening on the Y axis
+		//But on which side? vx can tell us
+		if (vx > 0) {
+		collisionSide = "left";
+		//Move the rectangle out of the collision
+		r1.x = r1.x + overlapX;
+		} else {
+		collisionSide = "right";
+		//Move the rectangle out of the collision
+		r1.x = r1.x - overlapX;
+		}
+		}
+		} else {
+		//No collision
+		collisionSide = "none";
+		}
+		} else {
+		//No collision
+		collisionSide = "none";
+		}
+		return collisionSide;
+		}
+				
+				function gameover()
+					{
+					gametimer.stop();
+					gameoverdisplay.visible = true;
+					gameovermessage.visible = true;
+					if(bombdiffused === bombs.length)
+					{
+					gameovermessage.text = "You Won!";
+					}
+					else
+					{
+					gameovermessage.text = "You Lost!";
+					}
+				}
+				function playgame()
+				{
+				//Up
+				if(moveup && !movedown)
+				{
+					console.log("up");
+				alien.vy =-8;
+				}
+				//Down
+				if(movedown && !moveup)
+				{
+				alien.vy =+8;
+				}
+				//Left
+				if(moveleft && !moveright)
+				{
+				alien.vx =-8;
+				}
+				//Right
+				if(moveright && !moveleft)
+				{
+				alien.vx =+8;
+				}
+				//Set the alien's velocity to zero if none of the keys are being pressed
+				if(!moveup && !movedown)
+				{
+				alien.vy = 0;
+				}
+				if(!moveleft && !moveright)
+				{
+				alien.vx = 0;
+				}
+				
+				// alien.x += alien.vx;
+				// alien.y += alien.vy;
+
+				alien.x = Math.max(64, Math.min(alien.x + alien.vx, gameWorld.Width-alien.width - 64));
+				alien.y = Math.max(64, Math.min(alien.y + alien.vy, gameWorld.Height-alien.height - 64));
+
+				//Scroll the camera
+				if(alien.x < camera.leftInnerBoundary())
+				{
+				camera.X = Math.floor(alien.x-(camera.Width / 4));
+				}
+				if(alien.y < camera.topInnerBoundary())
+				{
+				camera.Y = Math.floor(alien.y-(camera.Height / 4));
+				}
+				if(alien.x + alien.width > camera.rightInnerBoundary())
+				{
+				camera.X = Math.floor(alien.x + alien.width-(camera.Width / 4 * 3));
+				}
+				if(alien.y + alien.height > camera.bottomInnerBoundary())
+				{
+				camera.Y = Math.floor(alien.y + alien.height-(camera.Height / 4 * 3));
+				} 
+
+				//The camera's gameWorld boundaries
+				if(camera.X < gameWorld.X)
+					{
+				camera.X = gameWorld.X;
+				}
+				if(camera.Y < gameWorld.Y)
+				{
+				camera.Y = gameWorld.Y;				}
+				if(camera.X + camera.width > gameWorld.X + gameWorld.width)
+				{
+				camera.X = gameWorld.X + gameWorld.width-camera.width;
+				}
+				if(camera.Y + camera.height > gameWorld.height)
+				{
+				camera.Y = gameWorld.height-camera.height;
+				} 
+				//Alien's screen boundaries with 64 piXel padding
+				//to compensate for the screen border
+				// if(alien.x < 64)
+				// {
+				//   alien.x = 64;
+				// }
+				// if(alien.y < 64)
+				// {
+				//   alien.y = 64;
+				// }
+				// if(alien.x + alien.width > canvas.width - 64)
+				// {
+				//   alien.x = canvas.width - alien.width - 64;
+				// }
+				// if(alien.y + alien.height > canvas.height - 64)
+				// {
+				//   alien.y = canvas.height - alien.height - 64;
+				// }
+				
+				//Alternatively, move the alien and set its screen boundaries at the same time with this code:
+				// alien.x = Math.max(64, Math.min(alien.x + alien.vx, canvas.width - alien.width - 64));
+				// alien.y = Math.max(64, Math.min(alien.y + alien.vy, canvas.height - alien.height - 64));
+				
+//			Collisions with boxes
+				for(var i = 0; i < boxes.length; i++)
+				{
+						
+				blockRectangle(alien, boxes[i]);
+				}
+				//Collisions with bombs
+				for(var i = 0; i < bombs.length; i++)
+				{
+				var bomb = bombs[i];
+				
+				//If there's a collision, make the bombs invisible,
+				//reduce bombsDefused by 1, and check whether
+				//the player has won the game
+				if(hitTestCircle(alien, bomb) && bomb.visible)
+				{
+				bomb.visible = false;
+				bombdiffused++;
+				if(bombdiffused === bombs.length)
+				{
+				//Change the game state to OVER if
+				//the player has defused all the bombs
+				gameState = OVER;
+				}
+				}
+				}
+				
+				//Display the gameTimer
+				timermessage.text = gametimer.time;
+				
+				//This modification adds an extra "0" to the time
+				//if the time is less than 10
+				if(gametimer.time < 10)
+				{
+				timermessage.text = "0" + gametimer.time;
+				}
+				
+				//Check whether the time is over
+				if(gametimer.time === 0)
+				{
+				gameState = OVER;
+				}
+
+
+				}
+				function loadhandler (){
+					assetsloaded++;
+					if(assetsloaded == assettoload.length)
+					{
+					image.removeEventListener("load",loadhandler,false);
+					
+					console.log("build map initialize");
+					gameState = BUILD_MAP;
+					}
+				}
+				function createotherobjects()
+					{
+					timedisplay = Object.create(spriteobject);
+					timedisplay.scrollable = false;
+					timedisplay.sourcex = 0;
+					timedisplay.sourcey = 64;
+					timedisplay.soucewidth = 128;
+					timedisplay.sourceheight = 48;
+					timedisplay.width = 128;
+					timedisplay.height = 48;
+					timedisplay.x = canvas.width / 2-timedisplay.width / 2;
+					timedisplay.y = 8;
+					sprites.push(timedisplay);
+
+					gameoverdisplay = Object.create(spriteobject);
+					gameoverdisplay.scrollable = false;
+					gameoverdisplay.sourcex = 0;
+					gameoverdisplay.sourcey = 129;
+					gameoverdisplay.soucewidth = 316;
+					gameoverdisplay.sourceheight = 290;
+					gameoverdisplay.width = 316;
+					gameoverdisplay.height = 290;
+					gameoverdisplay.x = canvas.width / 2-gameoverdisplay.width / 2;
+					gameoverdisplay.y = canvas.height / 2-gameoverdisplay.height / 2;
+					gameoverdisplay.visible = false;
+					sprites.push(gameoverdisplay);
+					gameovermessage = Object.create(messageobject);
+					gameovermessage.x = 275;
+					gameovermessage.y = 270;
+					gameovermessage.font = "bold 30px Helvetica";
+					gameovermessage.fillStyle = "black";
+					gameovermessage.text = "";
+					gameovermessage.visible = false;
+					messages.push(gameovermessage);
+					timermessage = Object.create(messageobject);
+					timermessage.x = 330;
+					timermessage.y = 10;
+					timermessage.font = "bold 40px Helvetica";
+					timermessage.fillStyle = "white";
+					timermessage.text = "";
+					messages.push(timermessage);
+					}
+					update();
+				function update(){
+					requestAnimationFrame(update,canvas);
+					switch(gameState){
+						case LOADING:
+							console.log("loading");
+							break;
+						case BUILD_MAP:
+							buildmap(map);
+							buildmap(gameobjects);
+							createotherobjects();
+							gameState = PLAYING;
+							break;
+						case PLAYING:
+							playgame();
+							break;
+						case OVER:
+							gameover();
+							break;
+					}
+					render();
+				}
+				
+					function render(){
+					dsurface.clearRect(0,0,canvas.width,canvas.height);
+
+					dsurface.save();
+					dsurface.translate(-camera.X , -camera.Y);
+
+					if(sprites.length !==0){
+						for(var i = 0; i < sprites.length ; i++)
+						{
+							var sprite = sprites[i];
+					
+						if(sprite.visible && sprite.scrollable)
+						{
+						dsurface.drawImage(image,sprite.sourcex,sprite.sourcey,sprite.soucewidth,sprite.sourceheight,Math.floor(sprite.x),
+						Math.floor(sprite.y),sprite.width,sprite.height);
+						}
+						if(sprite.visible && !sprite.scrollable)
+						{
+							dsurface.drawImage(image,sprite.sourcex,sprite.sourcey,sprite.soucewidth,sprite.sourceheight,Math.floor(camera.X +sprite.x),
+						Math.floor(camera.Y + sprite.y),sprite.width,sprite.height);
+						}
+					}
+				}
+					dsurface.restore();
+					//Display the game messages
+					if(messages.length !== 0)
+					{
+					for(var i = 0; i < messages.length; i++)
+					{
+					var message = messages[i];
+					if(message.visible)
+					{
+					dsurface.font = message.font;
+					dsurface.fillStyle = message.fillStyle;
+					dsurface.textBaseline = message.textBaseline;
+					dsurface.fillText(message.text, message.x, message.y);
+					}
+					}
+					}
+					}
+			}());
+		</script>
+	</body>
+</html>

@@ -1,0 +1,157 @@
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+
+
+	<style type ="text/css">
+#stage
+{
+margin-left: 450px;
+width: 300 px;
+height: 300 px;
+position: relative;
+}
+#background
+{
+border :1px solid red;
+width: 300px;
+height: 300px;
+position: absolute;
+top: 0px;
+left: 0px;
+background-image: url(download.png);
+}
+#cannon
+{
+
+width: 20px;
+height: 30px;
+position: absolute;
+top: 270px;
+left: 140px;
+background-image: url(1216139692462036384qubodup_Cartoon_cannon_kind_of_thing.svg.hi.png);
+background-size: cover; 
+}
+
+#alien
+{
+
+width: 20px;
+height: 20px;
+position: absolute;
+top: 20px;
+left: 80px;
+background-image: url(images.png);
+background-size: cover; 
+}
+#missile
+{
+
+width: 20px;
+height: 30px;
+position: absolute;
+top: 230px;
+left: 145px;
+background-image: url(missile-311547_640.png);
+background-size: cover; 
+}
+</style> 
+
+<div id="stage">
+	<div id="background"></div>
+	<div id="cannon"></div>
+	<div id="missile"></div>
+	<div id="alien"></div>
+</div>
+
+	<p id="output">please enter the x and y coordinates to hit alien</p>
+	<input type="text" id="alienX" placeHolder = "enter x coordinates" autofocus/ >
+	<input type="text" id="alienY" placeHolder = "enter y coordinates"  autofocus / >
+	<button id="fire"> hit</button>
+
+	<script type="text/javascript">
+	//variables to hold values and to display result
+	var button = document.querySelector("button");
+	button.addEventListener("click", target,false);
+
+	var inputX = document.querySelector("#alienX");
+	var inputY = document.querySelector("#alienY");
+	var output = document.querySelector("#output");
+	
+	var alienX = 50;
+	var alienY = 20;
+	var guessX =50;
+	var guessY =20;
+	var cannonX = 200;
+	var gameWon = false;	
+
+	var shortremaining = 5;	
+	var shortmade  = 0;
+		
+		function target(){
+				hit();
+		}
+	function render (){
+		//alient position
+		alien.style.left = alienX +"px";
+		alien.style.top =  alienY +"px";
+
+		//missile position
+		missile.style.left = guessX + "px";
+		missile.style.top  = guessY + "px";
+		//cannon position
+		cannon.style.left = guessX + "px";
+	}
+		function hit(){
+
+		shortremaining = shortremaining - 1;
+		shortmade =  shortmade + 1;	
+
+		var gamestate = "shortmade " + shortmade + " shortremaining "  + shortremaining;
+
+		guessX = parseInt(inputX.value);
+		guessY = parseInt(inputY.value);
+
+		if(guessX == alienX && guessY ==alienY){
+
+			output.innerHTML = "you save the world to be invaded";
+
+			gameWon = true;
+			endgame();
+
+		}else {
+
+			output.innerHTML = "you miss " + gamestate;
+			
+			alienX =Math.ceil(Math.random()*290);
+			alienY +=50;
+			console.log("x" + alienX);
+			console.log("y" + alienY);
+
+		}
+		render();	
+	
+		if(shortremaining < 1 ){
+
+			endgame();
+			}
+	}
+		//end of game
+		function endgame(){
+			if(gameWon){
+
+			output.innerHTML = "you save the world";
+		}else {
+			output.innerHTML = "you lost the world";
+			
+		}
+}
+	</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,437 @@
+<html>
+<head>
+	<title>Island Adventure</title>
+</head>
+<body>
+	<style>
+
+	#stage{
+		margin-left: 100px;
+		position: relative;;
+		width: 510px;
+		height: 384px;
+		background-image: url("file:///C:/Users/initCoders/Desktop/Island%20Adventure/back.jpg");
+		float: left;
+		border:10px dashed red;
+	}
+	.cell{
+		position: absolute;
+		width: 64px;
+		height: 64px;
+		display: block;
+	}
+	p{
+		width: 400px;
+
+	}
+
+	h1{
+		text-align: center;
+	}
+
+	</style>
+	<h1>Island Adventure</h1>
+	<div style ="float:left;color:#999">
+				<h3>HELP :</h3>
+		<ol>
+			<li>Use arrow key to move ship</li>
+			<li>Go to island to buy food</li>
+			<li>Fight with pirate to steal gold</li>
+			<li>Reach home alive to win the game</li>
+			<li>Be aware of monster</li>
+		</ol>
+	</div>
+
+	<div style ="float:right" id="score">
+
+	</div>
+
+	<div id="stage"></div>
+	<p id="output" style="float:right;color:#999"></p>
+
+	<script type="text/javascript">
+
+	var stage = document.querySelector("#stage");
+	var output = document.querySelector("output");
+
+	//variable for images to be used in game
+	var water= 0;
+	var island= 1;
+	var pirate= 2;
+	var home = 3;
+	var ship = 4;
+	var monster = 5;
+
+	var food = 10;
+	var gold = 10;
+	var experience = 0;
+	var gameMessage = ""; 
+//	size of each cell
+	var size = 64;
+	var space = 0;
+
+	window.addEventListener("keydown",keyhandle,false);
+
+	//creation of map	
+	var map = [
+	[0, 2, 0, 0, 0, 0, 0, 3],
+	[0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 1, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0],	
+	[2, 0, 0, 2, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0] 
+	]
+
+		var gameObjects =
+		[
+		[0, 0, 0, 0, 0,  0, 0],
+		[0, 0, 0, 0, 0,  0, 0],
+		[0, 0, 0, 0, 0,  0, 0],
+		[0, 0, 5, 0, 0,  0, 0],
+		[0, 0, 0, 0, 0,  0, 0],
+		[4, 0, 0, 0, 0,  0, 0] 
+		];
+
+	var shipRow;
+	var shipColumn;
+	var monsterRow;
+	var monsterColumn;
+	
+	var ROWS = map.length;
+	var COLUMNS = map[0].length;
+
+	var gRows = gameObjects.length;
+	var gColumns = gameObjects[0].length;
+
+	var UP = 38;
+	var DOWN = 40;
+	var RIGHT = 39;
+	var LEFT = 37;
+
+	var output = document.querySelector("#output");
+
+	for(var row = 0; row < ROWS; row++)
+	{
+	for(var column = 0; column < COLUMNS; column++)
+	{
+	if(gameObjects[row][column] === ship)
+	{
+	shipRow = row;
+	shipColumn = column;
+	}
+	if(gameObjects[row][column]===monster)
+		monsterRow = row;
+		monsterColumn =column;
+		}
+	} 
+		function render(){
+				output.innerHTML = gameMessage;
+				output.innerHTML+= "<br>Gold: " + gold + ", Food: " + food + ", Experience: " + experience
+
+		//console.log("render");
+		if(stage.hasChildNodes())
+		{
+			for(var i = 0 ; i< ROWS*COLUMNS ; i++)
+			{
+		stage.removeChild(stage.firstChild);
+				}
+			}
+		for(var rows = 0 ; rows<ROWS ;  rows++  )
+		{
+		for(var cols = 0; cols < COLUMNS; cols++)
+			{
+			var cell = document.createElement("img");
+
+			cell.setAttribute("class","cell");
+
+			stage.appendChild(cell);
+
+			switch (map[rows][cols]){
+
+				case water :
+					cell.src = "back.jpg";
+					break;
+
+				case island :
+					cell.src = "island.jpg";
+					break;
+
+				case pirate :
+					cell.src = "pirate.jpg";
+					break;
+					
+				case home :
+					cell.src = "hut(1).jpg";
+					break;		
+				}
+					switch(gameObjects[rows][cols]){
+						case ship :
+						cell.src = "ship.png";
+						break;
+
+						case monster :
+						cell.src ="monster.jpg";
+						break;
+						}	
+					
+				cell.style.top = rows *size + "px";	
+				cell.style.left = cols *size + "px";
+						}
+					}
+				//gameMessage="Gold: " + gold + ", Food: "
+				 // + food + ", Experience: " + experience; 
+				}
+				// onload it runs
+				render();
+				
+				function keyhandle(event){
+			 	switch(event.keyCode){
+				case UP:
+				//console.log("up'");
+				if(shipRow > 0)
+				{
+				gameObjects[shipRow][shipColumn] = 0;
+				shipRow--;
+				gameObjects[shipRow][shipColumn] = ship;
+				}
+				break;
+
+				case DOWN:
+				//console.log("down'");
+				if(shipRow < ROWS - 1)
+				{
+				gameObjects[shipRow][shipColumn] = 0;
+				shipRow++;
+				gameObjects[shipRow][shipColumn] = ship;
+				}
+				break;
+
+				case LEFT:
+				//console.log("left'");
+				if(shipColumn > 0)
+				{
+				gameObjects[shipRow][shipColumn] = 0;
+				shipColumn--;
+				gameObjects[shipRow][shipColumn] = ship;
+				}
+				break;
+				case RIGHT:
+				//console.log("right");
+				if(shipColumn < COLUMNS - 1)
+				{
+				gameObjects[shipRow][shipColumn] = 0;
+				shipColumn++;
+				gameObjects[shipRow][shipColumn] = ship;
+				}
+				break;
+				}
+			 	switch(map[shipRow][shipColumn]){
+
+				case water :
+					gameMessage="you sailing on sea";
+					//gameMessage = "you sailing on sea";
+					break;
+
+				case pirate :
+					console.log("pirate");
+					fight();
+					break;
+
+				case island :
+					console.log("island");
+					trade();
+					break;
+				
+				case home :
+					console.log("home");	
+					endgame();
+					break;
+				}
+				food--;
+				if(food <= 0 || gold <= 0){
+
+					endgame();
+				}
+				movemonster();
+				render();
+				//movemonster();	
+			}
+			function movemonster(){
+				var UP =38
+				var DOWN=40;
+				var LEFT =37;
+				var RIGHT=39;
+				var validDirection = [];
+				var direction = undefined;
+
+
+				if(monsterRow > 0){
+
+					var thingAbove = map[monsterRow - 1][monsterColumn];
+			
+					if(thingAbove ===water){
+						validDirection.push(UP);
+						}
+					}
+					if(monsterRow < ROWS-1){
+						var thingdown = map[monsterRow+1][monsterColumn];
+						if(thingdown===water){
+							validDirection.push(DOWN);
+							}
+						}
+					if(monsterColumn > 0){
+						var thingtoleft = map[monsterRow][monsterColumn-1];
+						if(thingtoleft===water){
+							validDirection.push(LEFT);
+						}
+					}	
+					if(monsterColumn < COLUMNS-1){
+						var thingtoright = map[monsterRow][monsterColumn + 1];
+						if(thingtoright===water){
+							validDirection.push(RIGHT);
+							}
+						}
+						if(validDirection.length !==0){
+							var randomnumber = Math.floor(Math.random() * validDirection.length);
+							direction = validDirection[randomnumber];
+						}
+							{
+						if(gameObjects[shipRow][shipColumn]==monster || gameObjects[monsterRow][monsterColumn]==ship){
+						endgame();
+						}	
+					}
+						
+						switch(direction)
+
+							{
+							case UP:
+							//Clear the monster's current cell
+							gameObjects[monsterRow][monsterColumn] = 0;
+							//Subtract 1 from the monster's row
+							monsterRow--;
+							//Apply the monster's new updated position to the array
+							gameObjects[monsterRow][monsterColumn] = monster;
+							break;
+					
+							case DOWN:
+							gameObjects[monsterRow][monsterColumn] = 0;
+							monsterRow++;
+							gameObjects[monsterRow][monsterColumn] = monster;
+							break;
+					
+							case LEFT:
+							gameObjects[monsterRow][monsterColumn] = 0;
+							monsterColumn--;
+							gameObjects[monsterRow][monsterColumn] = monster;
+							break;
+					
+							case RIGHT:
+							gameObjects[monsterRow][monsterColumn] = 0;
+							monsterColumn++;
+							gameObjects[monsterRow][monsterColumn] = monster;
+						} 
+							collision();
+						}
+						
+						function collision(){
+							if(gameObjects[shipRow][shipColumn]==monster || gameObjects[monsterRow][monsterColumn]==ship)
+							{
+								endgame();
+							}
+						}
+				
+				function trade(){
+				var islandfood = experience + gold;
+				var cost = Math.ceil(Math.random()*islandfood);
+				//console.log("islandfood" + islandfood);
+				gameMessage="cost" + cost;
+
+				if(gold > food)
+				{
+					food +=islandfood;
+					gold -=cost;
+					experience +=2;
+					gameMessage= " You buy " + islandfood + "coconuts"
+					+ " for " + cost + " gold pieces" ;
+					}
+					else{
+						experience +=1;
+						gameMessage="you dont have enough gold to buy food";
+						}
+					}
+					function fight()
+					{
+					//The ship’s strength
+					var shipStrength = Math.ceil((food + gold) / 2);
+					//A random number between 1 and the ship's strength
+					var pirateStrength = Math.ceil(Math.random() * shipStrength * 2);
+					//Find out if the pirates are stronger than the player’s ship
+					gameMessage="shipStrength " +shipStrength;
+					gameMessage="pirateStrength " + pirateStrength;
+
+					if(pirateStrength > shipStrength)
+					{
+					//The pirates ransack the ship
+					var stolenGold = Math.round(pirateStrength / 2);
+					gold -= stolenGold;
+					//Give the player some experience for trying
+					experience += 1;
+					//Update the game message
+					gameMessage="You fight and LOSE " + stolenGold + " gold pieces."
+					+ " Ship's strength: " + shipStrength
+					+ " Pirate's strength: " + pirateStrength;
+					}
+					else
+					{
+					//The player wins the pirates' gold
+					var pirateGold = Math.round(pirateStrength / 2);
+					gold += pirateGold;
+					//Add some experience
+					experience += 2;
+					//Update the game message
+					gameMessage="You fight and WIN " + pirateGold + " gold pieces."
+					+ " Ship's strength: " + shipStrength
+					+ " Pirate's strength: " + pirateStrength;
+					}
+					}
+					function endgame()
+					{
+					if(map[shipRow][shipColumn] === home)
+					{
+					//Calculate the score
+					var score = food + gold + experience;
+					output.style.color ="green";
+					gameMessage="score" + score;
+					//Display the game message
+					gameMessage= "You made it home ALIVE! " + "Final Score: " + score;
+					}
+					else if(gameObjects[shipRow][shipColumn]===monster || gameObjects[monsterRow][monsterColumn]==ship)
+					{
+						output.style.color = "red";
+						gameMessage="you ship has been swallow by monster";
+					
+					}	
+					else
+						//Display the game message if the player has run out of gold or food
+					if(gold <= 0)
+					{
+					output.style.color = "red";
+					gameMessage= " You've run out of gold!";
+					gameMessage=" Your crew throws you overboard!";
+					}
+					if(food <= 0)
+					 {
+					
+					 output.style.color = "red";
+					 gameMessage= " You've run out of food!";
+					 gameMessage=" Your crew throws you overboard!";
+					}
+					
+				//Remove the keyboard listener to end the game
+					window.removeEventListener("keydown", keyhandle, false)
+			}	
+
+				
+	</script>
+</body>
+</html>

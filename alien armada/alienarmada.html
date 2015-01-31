@@ -1,0 +1,506 @@
+<html>
+<head>
+	<title>alien armada</title>
+</head>
+<body>
+		<audio id="music">
+		<source src = "sound/music.mp3" type="audio/mpeg" loop>
+		<source src = "sound/music.ogg" type="audio/ogg" loop>
+		</audio>
+
+		<audio id="shootsound">
+		<source src = "sound/shoot.mp3" type="audio/mpeg" loop>
+		<source src = "sound/shoot.ogg" type="audio/ogg" loop>
+		</audio>
+
+		<audio id="explosionsound">
+		<source src = "sound/explosion.mp3" type="audio/mpeg" loop>
+		<source src = "sound/explosion.ogg" type="audio/ogg" loop>
+		</audio>
+
+	<canvas width ="480" height = "320" style="border:1px solid #000"></canvas>
+
+	<script type="text/javascript">
+
+		(function (){
+
+			var spriteObject =
+			{
+			sourceX: 0,
+			sourceY: 0,
+			sourceWidth: 32,
+			sourceHeight: 32,
+			x: 0,
+			y: 0,
+			width: 32,
+			height: 32,
+
+			vx :0,
+			vy :0,
+
+			centerX : function (){
+				return this.x + (this.width/2);
+				},
+			centerY : function (){
+				return this.y + (this.height/2);
+				},
+			halfwidth : function(){
+				return this.width/2;
+				},
+			halfheight : function(){
+				return this.height/2;
+			}
+			}
+			var messageObject =
+			{
+			x: 0,
+			y: 0,
+			visible: true,
+			text: "Message",
+			font: "normal bold 20px Helvetica",
+			fillStyle: "red",
+			textBaseline: "top"
+			}; 
+
+			var canvas = document.querySelector("canvas");
+			var dsurface = canvas.getContext("2d");
+
+			//array to store messages
+			var messages = [];
+
+			var scoredisplay = Object.create(messageObject);
+			scoredisplay.font = "normal bold 30px Helvetica";
+			scoredisplay.fillStyle = "green";
+			scoredisplay.x = 400;
+			scoredisplay.y = 10;
+			messages.push(scoredisplay);
+
+			var gameovermessage = Object.create(messageObject);
+			gameovermessage.font = "normal bold 30px Helvetica";
+			gameovermessage.fillStyle = "green";
+			gameovermessage.x = 70;
+			gameovermessage.y = 120;
+			gameovermessage.visible = false;
+			messages.push(gameovermessage);
+
+			//arrays to store game object and asssets
+			var sprites = [];
+			var assettoload= [];
+			var missiles = [];
+			var aliens = [];
+			//create the background
+			var background = Object.create(spriteObject);
+			background.x = 0;
+			background.y = 0;
+			background.sourceWidth = 480;
+			background.sourceHeight = 320;
+			background.sourceY = 32;
+			background.width = 480;
+			background.height =320;
+			sprites.push(background);
+
+			//create the cannon and center it
+			var cannon = Object.create(spriteObject);
+			cannon.x = canvas.width/2 - cannon.width/2;
+			cannon.y = 280;
+			cannon.update = function()
+			{
+			this.sourceX = 3* this.sourceWidth;
+			}
+			sprites.push(cannon);
+
+			//alienobject
+			var alienObject =Object.create(spriteObject);
+			alienObject.normal = 1;
+			alienObject.exploded = 2;
+			alienObject.state = alienObject.normal;
+			
+			alienObject.update = function()
+			{
+			this.sourceX = this.state * this.sourceWidth;
+			}
+			
+			//load the tilesheet
+			var image = new Image();
+			image.addEventListener("load",loadhandler,false);
+			image.src = "images/alienArmada.png";
+			assettoload.push(image);
+
+			//variable to count asset loaded
+			var assetsloaded = 0;
+
+			//diffrent game states of game
+			var loading = 0;
+			var playing = 1;
+			var gameover = 2;
+			var gamestate = loading;
+			//aliens variable
+			var alienfrequency = 100;
+			var alientimer = 0;
+			//score v
+			var score = 0;
+			var scoreNeededToWin =50;
+			//direction in which cannon moves
+			var moveleft = false;
+			var moveright = false
+			//missile shoot
+			var shoot = false;
+			var spacekeydown = false;
+			//keys of keyboard
+			var left = 37;
+			var right= 39;
+			//for firing missiles
+			var space = 32;
+
+			//music block 
+			
+			var music = document.querySelector("#music");
+			music.addEventListener("canplaythrough",loadhandler,false);
+			music.load();
+			assettoload.push(music);
+
+
+			var shootsound = document.querySelector("#shootsound");
+			shootsound.addEventListener("canplaythrough",loadhandler,false);
+			shootsound.load();
+			assettoload.push(shootsound);
+
+
+			var explosionsound = document.querySelector("#explosionsound");
+			explosionsound.addEventListener("canplaythrough",loadhandler,false);
+			explosionsound.load();
+			assettoload.push(explosionsound);
+
+			window.addEventListener("keydown",function(event){
+				switch(event.keyCode){
+					case left:
+						moveleft = true;
+						break;
+					case right :
+						moveright = true;
+						break;
+					case space :
+						if(!spacekeydown){
+							shoot = true;
+							spacekeydown = true;
+							break;
+						}
+					}
+
+			},false);
+
+			window.addEventListener("keyup",function(event){
+				switch(event.keyCode){
+					case left:
+						moveleft = false;
+						break;
+					case right :
+						moveright = false;
+						break;
+					case space:
+						spacekeydown = false;
+
+					}
+					},false);
+
+				function update(){
+				requestAnimationFrame(update,canvas);
+				//change of game state 
+				switch(gamestate){
+
+					case loading :
+						console.log("wait loading.......");
+						break;
+					case playing :
+						playgame();
+						break;
+					case gameover :
+						endgame();
+						break;
+				}
+				render();
+			}
+			update();
+	
+
+			function loadhandler(){
+
+				assetsloaded++;
+				if(assetsloaded ==assettoload.length){
+					//remove event handler load from image and sound
+					image.removeEventListener("load",loadhandler,false);
+					music.removeEventListener("canplaythrough",loadhandler,false);
+					shootsound.removeEventListener("canplaythrough",loadhandler,false);
+					explosionsound.removeEventListener("canplaythrough",loadhandler,false);
+
+					//play the music
+					music.play();
+					music.volume = .2;
+
+					//switch to game state of playing
+					gamestate = playing;
+				}
+			}
+			function playgame()
+			{
+				if(moveleft && !moveright){
+					console.log("left");
+					cannon.vx -=1;
+				}
+				if(moveright &&!moveleft){
+					console.log("right");
+					cannon.vx +=1;
+				}
+				//cannon velocity is set to 0 if it is not moving
+				if(!moveleft && !moveright){
+				cannon.vx =0;
+				}
+				if(shoot){
+					console.log("space");
+					firemissile();
+					shoot =  false;
+				}
+				//move on basic of direction left or right
+				
+				//keep the cannon within the game
+				cannon.x = Math.max(0, Math.min(cannon.x + cannon.vx, canvas.width - cannon.width));
+			
+				//move the missile over y axis
+				for(var i=0; i < missiles.length; i++)
+				{
+					var missile = missiles[i];
+					missile.y +=missile.vy;
+
+					//remove the missile if it crossses the screen
+					if(missile.y < 0 - missile.height)
+					{
+						removeObject(missile,missiles);
+						removeObject(missile,sprites);
+						i--;	
+					}
+				}
+					//alien timer increase by 1
+					alientimer++;
+					console.log("alientimer " ,alientimer);
+					console.log("alienfrequency ", alienfrequency)
+					
+					if(alientimer == alienfrequency){
+						makealien();
+						alientimer =0;
+					if(alienfrequency > 2)
+						{
+						alienfrequency--;
+						}
+					}
+					//if(aliens.length !==0){
+					for(var i=0; i<aliens.length; i++)
+					{
+						var alien = aliens[i];
+						if(alien.state == alien.normal){
+							//move the alien 
+							alien.y +=alien.vy;
+						}
+					}
+
+					for(var i=0; i<aliens.length; i++)
+					{
+						var alien = aliens[i];
+
+					for(var j=0; j < missiles.length; j++){
+						var missile = missiles[j];	
+
+						if(hitTestRectangle(missile,alien) && alien.state ==alien.normal)
+						{
+							//destroy alien
+							destroyalien(alien);
+							//update score;
+							score++;
+							//scoredisplay= score;
+							//remove the missile
+							removeObject(missile,missiles);
+							removeObject(missile,sprites);
+							j--;
+						}
+					}	
+					if(hitTestRectangle(cannon,alien) && alien.state==alien.normal){
+						destroyCannon();
+						gamestate=gameover;
+
+					}
+						// if(alien.state == alien.normal){
+						// 	//move the alien 
+						// 	alien.y +=alien.vy;
+						// }	
+						//find out if the alien has crossed the canvas height
+						if(alien.y > canvas.height + alien.height)
+						{
+							//end the game if alien reached the canvas height
+							gamestate = gameover;
+						}
+						scoredisplay.text = score;
+						
+						if(score ==scoreNeededToWin){
+							gamestate = gameover;
+						}
+					}
+				}
+			
+			function destroyalien(alien){
+				// alert("destroyed");
+				//change the alien state and update
+				alien.state = alien.exploded;
+				alien.update();
+				//remove alien after 1 sec
+
+				setTimeout(removealien,1000);
+
+				function removealien(){
+					removeObject(alien,aliens);
+					removeObject(alien,sprites);
+				}
+				explosionsound.currentTime = 0;
+				explosionsound.play();
+			}
+			function destroyCannon()
+			{
+			  //Change the cannon's state and update the object
+			  cannon.state = cannon.exploded;
+			  cannon.update();
+			 }
+
+			function firemissile(){
+				//missile sprite
+				var missile = Object.create(spriteObject);
+				missile.sourceX = 128;
+				missile.sourceWidth =20;
+				missile.sourceHeight =20;
+				missile.width = 20;
+				missile.height = 20;
+				//center missile at cannon center
+				missile.x =cannon.centerX() -  missile.halfwidth();
+				missile.y = cannon.y - missile.height;
+				//spped of missile
+				missile.vy = -8;
+				//add missile in both sprite array
+				sprites.push(missile);
+				missiles.push(missile);
+
+				//play sound for missile 
+				shootsound.currentTime = 0;
+				shootsound.play();
+
+
+			}
+			function removeObject(objectToRemove, array)
+				{
+				var i = array.indexOf(objectToRemove);
+				if (i !== -1)
+				{
+				array.splice(i, 1);
+				}
+			} 
+			function makealien(){
+				//alien create
+				var alien = Object.create(alienObject);
+				// alien.x = 32;
+				alien.sourceX = 32;
+
+				//set its position to above boudndary
+				alien.y = 0 - alien.height;
+
+				//assign random x postion to alienobject
+				var randomposition = Math.floor(Math.random()*15);
+				alien.x= randomposition * alien.width;
+				//assign velocity
+				alien.vy = 1;
+				//push it in both alien and sprite array
+				aliens.push(alien);
+				sprites.push(alien);
+			}
+			function hitTestRectangle(r1, r2)
+				{
+				  //A variable to determine whether there's a collision
+				  var hit = false;
+				  
+				  //Calculate the distance vector
+				  var vx = r1.centerX() - r2.centerX();
+				  var vy = r1.centerY() - r2.centerY();
+				  console.log("vx " , vx);
+				  console.log("vy " , vy);
+
+				  //Figure out the combined half-widths and half-heights
+				  var combinedhalfwidths = r1.halfwidth() + r2.halfwidth();
+				  var combinedHalfHeights = r1.halfheight() + r2.halfheight();
+
+				  console.log("combinedhalfwidths " , combinedhalfwidths);
+				  console.log("combinedHalfHeights " , combinedHalfHeights);
+
+				  //Check for a collision on the x axis
+				if(Math.abs(vx) < combinedhalfwidths && Math.abs(vy) < combinedHalfHeights)
+				  {
+				      //There's definitely a collision happening
+				      console.log("HIT!!!");
+				      hit = true;
+				    }
+				    else
+				    {
+				      //There's no collision on the y axis
+				      hit = false;
+				    }   
+				    return hit;
+				  }
+
+			function endgame(){
+				gameovermessage.visible = true;
+
+				if(score < scoreNeededToWin)
+				{
+					gameovermessage.text = "earth destroyed";
+													
+				}else{
+					gameovermessage.x = 120;
+					gameovermessage.text = "earth saved";
+				}
+				// if(score ==scoreNeededToWin){}
+				// 	gameovermessage.text = "you saved earth";
+			}
+			
+			function render()
+			{
+				dsurface.clearRect(0,0,canvas.width,canvas.height);
+
+				if(sprites.length !==0)
+				{
+					for(var i = 0; i < sprites.length ; i++)
+					{
+						var sprite = sprites[i];
+					dsurface.drawImage(image,sprite.sourceX,sprite.sourceY,sprite.sourceWidth,sprite.sourceHeight,
+										Math.floor(sprite.x),Math.floor(sprite.y),sprite.width,sprite.height);
+					}
+				}
+				
+			if(messages.length !==0)
+			{
+				for(var i=0; i<messages.length ; i++){
+
+					var message = messages[i];
+					if(message.visible){
+					dsurface.font = message.font;
+					dsurface.fillStyle = message.fillStyle;
+					dsurface.textBaseline = message.textBaseline;
+					dsurface.fillText(message.text, message.x, message.y)
+					}
+				}
+			}
+		}
+
+		}());
+
+	
+
+
+	</script>	
+	
+
+
+</body> 

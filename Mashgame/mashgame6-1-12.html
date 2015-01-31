@@ -1,0 +1,265 @@
+<html>
+<head>
+	<title>1-6-15</title>
+</head>
+<body>
+	<style>
+		/*stylesheet for multiple canvas element*/
+			#stage{
+				width: 552px;
+				height: 414px;
+				position: relative;;
+				}
+			canvas
+				{
+				display: block;
+				position: absolute;
+				width: 128px;
+				height: 128px;
+				box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+				border-radius: 10px;
+				cursor: pointer;
+				} 
+			#output{
+				font-family: Segoe Print;
+				color:#000;
+
+			}	
+	</style>
+
+<div id="stage"></div>
+<p id="output">test</p>
+
+<!-- <canvas width="128" height="128" style="border :1px solid red"></canvas>	
+ -->
+<script type="text/javascript">
+	// var canvas = document.querySelector("canvas");
+	// var drawingSurface = canvas.getContext("2d");
+		var monster  = {
+		Image :"imgo_new.png",
+		size : 128,
+		numberofframe:5,
+		currentframe:0,
+		columns :3,
+		forward : true,
+		sourceX : 0,
+		sourceY : 0,
+		
+		hide : 0 ,
+		jump : 1,
+		state:this.hide,
+
+		hit :2,
+		timetoreset:9,
+		resetcounter:0,
+
+		waittime : undefined,
+
+		findwaittime: function(){
+			this.waittime = Math.ceil(Math.random()*60);
+		},
+		updateAnimation: function(){
+
+			if(this.state!==this.hit){
+			if(this.waittime > 0 ||this.waittime ==undefined){
+				this.state=this.hide;
+			}else{
+				this.state =this.jump;
+			}
+		}
+			switch(this.state){
+				case this.hide:
+					this.currentframe=0;
+					this.waittime--
+					break;
+				case this.jump:
+					if(this.currentframe ==this.numberofframe){
+					this.forward =false;
+				}
+					if(this.currentframe==0 && this.forward==false){
+						this.forward=true;
+						this.findwaittime();
+						this.state= this.hide;
+						break;
+					}
+						if(this.forward){
+						this.currentframe++;
+						}else{
+						this.currentframe--;
+						}
+						break;
+						case this.hit:
+						this.currentframe =6;
+						//alert("hit");
+						this.resetcounter++;
+						if(this.resetcounter==this.timetoreset){
+							this.state=this.hide;
+							this.forward=true;
+							this.currentframe=0;
+							this.resetcounter=0;
+							this.findwaittime();
+						}
+						break;
+					}
+			this.sourceX = Math.floor(this.currentframe % this.columns) * this.size;
+			this.sourceY = Math.floor(this.currentframe / this.columns)* this.size;
+			// console.log("this.sourceX " +this.sourceX);
+			// console.log("this.sourceY" + this.sourceY);
+			}
+		 }
+		 // 	var image = new Image();
+			// image.addEventListener("load", loadhandler, false);
+			// image.src = monster.Image; 
+			
+			// function loadhandler(){
+			// 	monster.findwaittime();
+			// 	updateAnimation();
+			// 	}
+			// function updateAnimation(){
+			// 	setTimeout(updateAnimation,120);
+			// 	monster.updateAnimation();
+			// 	render();
+			// 	}
+			// function render(){
+			// 	drawingSurface.clearRect(0,0,canvas.width,canvas.height);
+			// 	drawingSurface.drawImage(image,monster.sourceX,monster.sourceY,monster.size,monster.size,0,0,monster.size,monster.size);
+			// 	}
+
+			// canvas	.addEventListener("mousedown",mousedownhandler,false);
+
+			// function mousedownhandler()	{
+			// 	console.log("hit");
+			// 		if(monster.state==monster.jump){
+			// 		monster.state = monster.hit;
+			// 	}
+			// }
+
+			// *************code to make multiple monster canvas and context *************
+			
+			var monsterhit = 0;
+			var monsterObject = [];
+			var monstercanvase = [];
+			var monsterdrawingsurface =[];
+			
+			var ROWS = 3;
+			var COLUMNS = 4;
+			var SIZE = monster.size;
+			var SPACE = 10;
+
+			var image = new Image();
+			image.addEventListener("load",loadhandler,false);
+			image.src = monster.Image;
+
+			var output = document.querySelector("#output");
+			// output.style.color = "red";
+			// output.style.font-family = "papyrus";
+
+			function loadhandler(){
+				buildmap();
+
+				gameTimer.time = 30;
+				gameTimer.start();
+
+				updateAnimation();
+			}
+
+			function buildmap(){
+
+				for(var row=0 ; row < ROWS ; row++ )
+				{
+					for(var col=0;col < COLUMNS; col++){
+						var newmonsterobject = Object.create(monster);
+						monsterObject.push(newmonsterobject);
+
+						var canvas=document.createElement("canvas");
+						canvas.setAttribute("width",SIZE);
+						canvas.setAttribute("height",SIZE);
+						stage.appendChild(canvas);
+						canvas.style.top = row *(SIZE +SPACE) + "px";
+						canvas.style.left = col *(SIZE + SPACE) + "px";
+						canvas.addEventListener("mousedown",mousedownhandler,false);
+						monstercanvase.push(canvas);
+
+						var drawingSurface =canvas.getContext("2d");
+						monsterdrawingsurface.push(drawingSurface);
+					}
+				}
+			}
+			function updateAnimation(){
+
+				if(gameTimer.time >0)
+				setTimeout(updateAnimation,120);
+
+				for(var i=0; i < monsterObject.length; i++){
+					monsterObject[i].updateAnimation();
+					}
+					if(gameTimer.time==0){
+						endgame();
+					}
+					
+					render();
+				}
+			function render(){
+				for(var i=0; i< monsterObject.length; i++){
+					var monster= monsterObject[i];
+					var drawingSurface = monsterdrawingsurface[i];
+					
+					drawingSurface.clearRect(0,0,SIZE,SIZE);
+					drawingSurface.drawImage(image,monster.sourceX,monster.sourceY,SIZE,SIZE,0,0,SIZE,SIZE);
+				}
+				
+					output.innerHTML = "MONSTER SMASHED " + monsterhit + " TIME-LEFT " + gameTimer.time;
+			}	
+			function mousedownhandler(event){
+				var canvasclicked = event.target;
+
+				for(var i=0; i<monstercanvase.length; i++){
+
+					if(monstercanvase[i] == canvasclicked){
+					var monster = monsterObject[i];
+					if(monster.state == monster.jump){
+
+						monster.state = monster.hit;
+						monsterhit++;
+						}
+					}
+				}
+			}
+			var gameTimer ={
+			time: 0,
+			interval: undefined,
+			
+			start: function()
+			{
+			var self = this;
+			this.interval = setInterval(function(){self.tick();}, 1000);
+			},
+			tick: function()
+			{
+			this.time--;
+			},
+			stop: function()
+			{
+			clearInterval(this.interval);
+			},
+			reset: function()
+			{
+			this.time = 0;
+			}
+			}; 
+
+			function endgame(){
+				gameTimer.stop();
+
+				for(var i=0; i<monstercanvase.length; i++){
+					var canvas= monstercanvase[i];
+					canvas.removeEventListener("mousedown",mousedownhandler,false);
+				}
+
+			}	
+
+
+</script>
+
+</body>
+</html>
